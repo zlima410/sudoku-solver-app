@@ -39,4 +39,12 @@ def solve_sudoku(board):
                 board[row][col] = 0 # backtrack
         return False    # no valid number was found
     
-    
+    # convert string representation of sudoku board to 2D array
+    board = [[int(c) for c in row] for row in board.split("\n")]
+
+    if solve():
+        # convert back to string representation of sudoku board
+        solved_board = "\n".join("".join(str(cell) for cell in row) for row in board)
+        return solved_board
+    else:
+        return "No solution exists for the given Sudoku puzzle."
