@@ -18,4 +18,12 @@ def solve_sudoku(board):
                     return False
         return True
     
+    # find an empty cell in the board
+    def find_empty_cell():
+        for i in range(9):
+            for j in range(9):
+                if board[i][j] == 0:
+                    return i, j
+        return None, None
+    
     
