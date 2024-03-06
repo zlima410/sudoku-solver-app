@@ -26,4 +26,17 @@ def solve_sudoku(board):
                     return i, j
         return None, None
     
+    # solve the sudoku board using backtracking
+    def solve():
+        row, col = find_empty_cell()
+        if row is None:
+            return True # sudoku board is solved
+        for num in range(1, 10):
+            if is_valid(row, col, num):
+                board[row][col] = num
+                if solve(): # recursive funciton call
+                    return True
+                board[row][col] = 0 # backtrack
+        return False    # no valid number was found
+    
     
