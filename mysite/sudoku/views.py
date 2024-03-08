@@ -43,3 +43,50 @@ def generate_puzzle(request):
 
     # return the puzzle as a JSON response
     return JsonResponse({'status': 'success', 'message': 'Puzzle generated successfully', 'puzzle': puzzle_str})
+
+def solve_puzzle(request, puzzle_id):
+    # get the puzzle from the database using the puzzle_id
+    try:
+        puzzle = Sudoku.objects.get(id=puzzle_id)
+    except Sudoku.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Puzzle not found'})
+    
+    # solve the puzzle using backtracking algorithm
+    def is_valid(row, col, num):
+        # check if the number is already in the row
+        for i in range(9):
+            if puzzle.puzzle[row * 9 + i] == str(num):
+                return False
+        # check if the number is already in the column
+        for i in range(9):
+            if puzzle.puzzle[i * 9 + col] == str(num):
+                return False
+        # check if the number is in the 3x3 box
+        start_row, start_col = 3 * (row // 3), 3 * (col // 3)
+        for i in range(3):
+            for j in range(3):
+                if puzzle.puzzle[(start_row + i) * 9 + start_col + j] == str(num):
+                    return False
+        return True
+    
+    def solve():
+        for i in range(81):
+            row, col = i // 9, i % 9
+            if puzzle.puzzle[i] == '0':
+                for num in range(1, 10):
+                    if is_valid(row, col, num):
+                        puzzle.puzzle = puzzle.puzzle[:i] + str(num) + puzzle.puzzle[i + 1:]
+                        if solve():
+                            return True
+                        puzzle.puzzle = puzzle.puzzle[:i] + '0' + puzzle.puzzle[i + 1:]
+                return False
+        return True
+    
+    # solve the puzzle
+    if solve():
+        # puzzle was solved successfully
+        puzzle.save()
+        return JsonResponse({'status': 'success', 'message': 'Puzzle solved successfully', 'solution': puzzle.puzzle})
+    else:
+        # puzzle cannot be solved
+        return JsonResponse({'status': 'error', 'message': 'Puzzle cannot be solved'})
