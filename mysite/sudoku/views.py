@@ -47,10 +47,13 @@ def generate_puzzle(request):
 def solve_puzzle(request, puzzle_id):
     # get the puzzle from the database using the puzzle_id
     try:
-        puzzle = Sudoku.objects.get(id=puzzle_id)
+        sudoku = Sudoku.objects.get(id=puzzle_id)
     except Sudoku.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Puzzle not found'})
     
+    # copy the puzzle to a new object
+    puzzle = list(sudoku.puzzle)
+
     # solve the puzzle using backtracking algorithm
     def is_valid(row, col, num):
         # check if the number is already in the row
@@ -75,18 +78,26 @@ def solve_puzzle(request, puzzle_id):
             if puzzle.puzzle[i] == '0':
                 for num in range(1, 10):
                     if is_valid(row, col, num):
-                        puzzle.puzzle = puzzle.puzzle[:i] + str(num) + puzzle.puzzle[i + 1:]
+                        puzzle[i] = str(num)
                         if solve():
                             return True
-                        puzzle.puzzle = puzzle.puzzle[:i] + '0' + puzzle.puzzle[i + 1:]
+                        puzzle[i] = '0'
                 return False
         return True
     
     # solve the puzzle
     if solve():
         # puzzle was solved successfully
-        puzzle.save()
-        return JsonResponse({'status': 'success', 'message': 'Puzzle solved successfully', 'solution': puzzle.puzzle})
+        sudoku.solution = ''.join(puzzle)
+        sudoku.save()
+        return JsonResponse({'status': 'success', 'message': 'Puzzle solved successfully', 'solution': sudoku.solution})
     else:
         # puzzle cannot be solved
         return JsonResponse({'status': 'error', 'message': 'Puzzle cannot be solved'})
+    
+def get_puzzle(request, puzzle_id):
+    try:
+        sudoku = Sudoku.objects.get(id=puzzle_id)
+        return JsonResponse({'status': 'success', 'message': 'Puzzle retrieved successfully', 'puzzle': sudoku.puzzle})
+    except Sudoku.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Puzzle not found'})
