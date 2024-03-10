@@ -10,7 +10,7 @@ from .models import Sudoku
 logger = logging.getLogger(__name__)
 
 def generate_puzzle(request):
-    logging.info('Generating new puzzle')
+    logger.info('Generating new puzzle')
 
     # generate a new random puzzle
     def generate_random_puzzle():
@@ -48,9 +48,9 @@ def generate_puzzle(request):
     sudoku = Sudoku.objects.create(puzzle=puzzle_str, solution='')  # no solution present
 
     # return the puzzle as a JSON response
-    return JsonResponse({'status': 'success', 'message': 'Puzzle generated successfully', 'puzzle': puzzle_str})
+    return JsonResponse({'status': 'success', 'message': 'Puzzle generated successfully', 'puzzle': puzzle_str, 'id': sudoku.id})
 
-    logging.info('Puzzle generated successfully')
+    logger.info('Puzzle generated successfully')
 
 def solve_puzzle(request, puzzle_id):
     # get the puzzle from the database using the puzzle_id
